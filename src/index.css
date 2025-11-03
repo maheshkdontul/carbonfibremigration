@@ -1,0 +1,34 @@
+/* Tailwind CSS directives - these inject Tailwind's base, components, and utilities */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base styles applied globally */
+@layer base {
+  /* Set default font and remove default margins */
+  body {
+    @apply font-sans antialiased;
+    /* Set base background and text colors */
+    @apply bg-gray-50 text-gray-900;
+    /* Remove default margin */
+    margin: 0;
+  }
+  
+  /* Remove default link styling */
+  a {
+    @apply text-primary-600 hover:text-primary-700;
+  }
+}
+
+/* Custom component classes */
+@layer components {
+  /* Reusable button styles */
+  .btn-primary {
+    @apply bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors;
+  }
+}
+

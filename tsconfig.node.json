@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    // Configuration for Node.js tooling files (vite.config.ts)
+    "composite": true,
+    "skipLibCheck": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true
+  },
+  "include": ["vite.config.ts"]
+}
+

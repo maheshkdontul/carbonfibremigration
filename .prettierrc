@@ -1,0 +1,17 @@
+{
+  // Prettier configuration for code formatting
+  "semi": true,
+  // Use single quotes for strings
+  "singleQuote": true,
+  // Use 2 spaces for indentation
+  "tabWidth": 2,
+  // Use spaces instead of tabs
+  "useTabs": false,
+  // Print width - lines longer than this will wrap
+  "printWidth": 80,
+  // Add trailing commas where valid in ES5
+  "trailingComma": "es5",
+  // Arrow function parentheses: always include
+  "arrowParens": "always"
+}
+
