@@ -22,6 +22,7 @@ function Sidebar({ currentPath }: { currentPath: string }) {
     { path: '/customer-engagement', label: 'Customer Engagement', icon: '📞' },
     { path: '/waves-management', label: 'Waves Management', icon: '🌊' },
     { path: '/reports', label: 'Reports & Analytics', icon: '📈' },
+    { path: '/reconciliation', label: 'Reconciliation', icon: '🔍' },
   ]
   
   return (

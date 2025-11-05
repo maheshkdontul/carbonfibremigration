@@ -579,13 +579,23 @@ export async function createConsentLog(
     throw new ApiError('No data returned from create consent log operation')
   }
 
+  // Type assertion to handle Supabase return type
+  const consentLogData = data as {
+    id: string
+    customer_id: string
+    agent_name: string
+    status: string
+    timestamp: string
+    notes: string | null
+  }
+
   return {
-    id: data.id,
-    customer_id: data.customer_id,
-    agent_name: data.agent_name,
-    status: data.status as ConsentStatus,
-    timestamp: data.timestamp,
-    notes: data.notes || undefined,
+    id: consentLogData.id,
+    customer_id: consentLogData.customer_id,
+    agent_name: consentLogData.agent_name,
+    status: consentLogData.status as ConsentStatus,
+    timestamp: consentLogData.timestamp,
+    notes: consentLogData.notes || undefined,
   }
 }
 

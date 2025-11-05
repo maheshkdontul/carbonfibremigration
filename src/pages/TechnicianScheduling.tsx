@@ -13,6 +13,7 @@ import {
   assignTechnicianToWorkOrder,
   updateWorkOrderStatus,
   createWorkOrder,
+  updateWaveProgress,
 } from '../services/api'
 import { getErrorMessage } from '../utils/errorHandler'
 import type { WorkOrder, Technician, Location, WorkOrderStatus } from '../types'
@@ -89,6 +90,22 @@ function TechnicianScheduling() {
       await updateWorkOrderStatus(workOrderId, newStatus, startTime, endTime)
       showNotification('Work order status updated successfully', 'success')
       workOrdersData.refetch()
+      
+      // Automatically refresh wave progress if status changed to Completed
+      // This implements Phase 5.2: Wave Progress Automation
+      if (newStatus === 'Completed') {
+        // Find which wave this work order belongs to
+        const workOrder = workOrdersData.data.find(wo => wo.id === workOrderId)
+        if (workOrder) {
+          const location = locationsData.data.find(loc => loc.id === workOrder.location_id)
+          if (location?.wave_id) {
+            // Update wave progress in background (don't wait for it)
+            updateWaveProgress(location.wave_id).catch(() => {
+              // Silently fail - wave progress will update on next page visit
+            })
+          }
+        }
+      }
     } catch (error) {
       const errorMessage = getErrorMessage(error)
       showNotification(`Failed to update status: ${errorMessage}`, 'error')

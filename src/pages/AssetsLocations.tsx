@@ -10,6 +10,7 @@ import { fetchAssets, fetchLocations, bulkCreateAssets, createLocation } from '.
 import { parseCSV, convertCSVToData } from '../utils/csvParser'
 import { getErrorMessage } from '../utils/errorHandler'
 import { FILTER_ALL, MAP_DISPLAY_LIMIT } from '../utils/constants'
+import { validateCSVFile } from '../utils/validation'
 import type { Asset, Location } from '../types'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ErrorMessage from '../components/ErrorMessage'
@@ -59,10 +60,11 @@ function AssetsLocations() {
     const file = event.target.files?.[0]
     if (!file) return
 
-    // Validate file type
-    if (!file.name.endsWith('.csv')) {
+    // Validate file
+    const validation = validateCSVFile(file)
+    if (!validation.valid) {
       assetsData.clearError()
-      showNotification('Please upload a CSV file', 'error')
+      showNotification(validation.error || 'Invalid file', 'error')
       return
     }
 

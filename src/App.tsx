@@ -10,6 +10,7 @@ import TechnicianScheduling from './pages/TechnicianScheduling'
 import CustomerEngagement from './pages/CustomerEngagement'
 import WavesManagement from './pages/WavesManagement'
 import Reports from './pages/Reports'
+import Reconciliation from './pages/Reconciliation'
 
 // Main App component - sets up routing
 function App() {
@@ -36,6 +37,8 @@ function App() {
           <Route path="/waves-management" element={<WavesManagement />} />
           {/* Reports route - analytics and exports */}
           <Route path="/reports" element={<Reports />} />
+          {/* Reconciliation route - asset tracking reconciliation */}
+          <Route path="/reconciliation" element={<Reconciliation />} />
         </Routes>
       </Layout>
     </Router>

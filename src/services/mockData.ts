@@ -9,8 +9,6 @@ import type {
   Customer,
   WorkOrder,
   ConsentLog,
-  Region,
-  CustomerCohort,
 } from '../types'
 
 // Mock Assets - sample infrastructure data

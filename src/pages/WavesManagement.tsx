@@ -9,6 +9,7 @@ import { useAsyncOperation } from '../hooks/useAsyncOperation'
 import { fetchWaves, fetchLocations, createWave, updateWaveProgress } from '../services/api'
 import { getErrorMessage } from '../utils/errorHandler'
 import { DEFAULT_REGION, DEFAULT_CUSTOMER_COHORT } from '../utils/constants'
+import { validateWaveForm } from '../utils/validation'
 import type { Wave, Location, Region, CustomerCohort } from '../types'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ErrorMessage from '../components/ErrorMessage'
@@ -74,6 +75,14 @@ function WavesManagement() {
   // Handle wave creation - saves to Supabase
   const handleCreateWave = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Validate form
+    const validation = validateWaveForm(formData)
+    if (!validation.valid) {
+      showNotification(`Validation errors: ${validation.errors.join(', ')}`, 'error')
+      return
+    }
+
     await createWaveOperation.execute()
   }
 
@@ -87,6 +96,18 @@ function WavesManagement() {
     } catch (error) {
       const errorMessage = getErrorMessage(error)
       showNotification(`Failed to refresh progress: ${errorMessage}`, 'error')
+    }
+  }
+
+  // Refresh all wave progress
+  const refreshAllProgress = async () => {
+    try {
+      await Promise.all(wavesData.data.map((wave) => updateWaveProgress(wave.id)))
+      wavesData.refetch()
+      showNotification('All wave progress refreshed', 'success')
+    } catch (error) {
+      const errorMessage = getErrorMessage(error)
+      showNotification(`Failed to refresh all progress: ${errorMessage}`, 'error')
     }
   }
 
@@ -106,14 +127,22 @@ function WavesManagement() {
         />
       )}
 
-      {/* Page title and create button */}
+      {/* Page title and action buttons */}
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-gray-900">Waves Management</h1>
 
-        {/* Button to open wave creation modal */}
-        <button onClick={() => setShowModal(true)} className="btn-primary">
-          Create New Wave
-        </button>
+        <div className="flex space-x-3">
+          {/* Refresh all progress button */}
+          {wavesData.data.length > 0 && (
+            <button onClick={refreshAllProgress} className="btn-secondary">
+              🔄 Refresh All Progress
+            </button>
+          )}
+          {/* Button to open wave creation modal */}
+          <button onClick={() => setShowModal(true)} className="btn-primary">
+            Create New Wave
+          </button>
+        </div>
       </div>
 
       {/* Error message */}

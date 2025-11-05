@@ -52,7 +52,18 @@ export function parseCSV(csvText: string): CSVRow[] {
       row[header] = values[index]?.trim().replace(/"/g, '') || ''
     })
 
-    rows.push(row as CSVRow)
+    // Type assertion with proper structure validation
+    const csvRow: CSVRow = {
+      address: row.address || '',
+      region: row.region || '',
+      type: row.type || '',
+      status: row.status || '',
+      installation_date: row.installation_date,
+      technician_id: row.technician_id,
+      coordinates_lat: row.coordinates_lat,
+      coordinates_lng: row.coordinates_lng,
+    }
+    rows.push(csvRow)
   }
 
   if (errors.length > 0 && rows.length === 0) {

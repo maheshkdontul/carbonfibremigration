@@ -5,7 +5,7 @@
 
 import { useMemo } from 'react'
 import { useDataFetching } from '../hooks/useDataFetching'
-import { fetchAssets, fetchLocations, fetchWaves, fetchWorkOrders } from '../services/api'
+import { fetchAssets, fetchLocations, fetchWaves, fetchWorkOrders, updateWaveProgress } from '../services/api'
 import type { Asset, Location, Wave, WorkOrder } from '../types'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ErrorMessage from '../components/ErrorMessage'
@@ -122,7 +122,24 @@ function Dashboard() {
 
       {/* Waves Progress Section */}
       <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Migration Waves Progress</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold text-gray-900">Migration Waves Progress</h2>
+          {wavesData.data.length > 0 && (
+            <button
+              onClick={async () => {
+                try {
+                  await Promise.all(wavesData.data.map((wave) => updateWaveProgress(wave.id)))
+                  wavesData.refetch()
+                } catch (error) {
+                  // Silently fail - progress will update on next visit
+                }
+              }}
+              className="text-sm text-primary-600 hover:text-primary-700"
+            >
+              🔄 Refresh
+            </button>
+          )}
+        </div>
         {wavesData.data.length === 0 ? (
           <p className="text-gray-500">No waves found. Create waves in the Waves Management page.</p>
         ) : (
