@@ -5,6 +5,7 @@
 import { supabase } from './supabase'
 import { handleApiError, ApiError } from '../utils/errorHandler'
 import { CSV_BATCH_SIZE } from '../utils/constants'
+import type { Database } from '../types/supabase'
 import type {
   Asset,
   Location,
@@ -40,7 +41,7 @@ export async function fetchAssets(): Promise<Asset[]> {
   }
 
   // Transform Supabase data to our Asset type
-  return (data || []).map((asset) => ({
+  return (data || []).map((asset: Database['public']['Tables']['assets']['Row']) => ({
     id: asset.id,
     type: asset.type as Asset['type'],
     location_id: asset.location_id || '',
@@ -62,7 +63,7 @@ export async function createAsset(asset: Omit<Asset, 'id'>): Promise<Asset> {
       status: asset.status,
       installation_date: asset.installation_date || null,
       technician_id: asset.technician_id || null,
-    })
+    } as Database['public']['Tables']['assets']['Insert'])
     .select()
     .single()
 
@@ -96,7 +97,7 @@ export async function updateAsset(id: string, updates: Partial<Asset>): Promise<
       status: updates.status,
       installation_date: updates.installation_date || null,
       technician_id: updates.technician_id || null,
-    })
+    } as Database['public']['Tables']['assets']['Update'])
     .eq('id', id)
 
   if (error) {
@@ -128,7 +129,7 @@ export async function bulkCreateAssets(assets: Omit<Asset, 'id'>[]): Promise<{ s
             status: asset.status,
             installation_date: asset.installation_date || null,
             technician_id: asset.technician_id || null,
-          }))
+          })) as Database['public']['Tables']['assets']['Insert'][]
         )
         .select()
 
@@ -166,7 +167,7 @@ export async function fetchLocations(): Promise<Location[]> {
     throw handleApiError(error, 'fetchLocations')
   }
 
-  return (data || []).map((loc) => ({
+  return (data || []).map((loc: Database['public']['Tables']['locations']['Row']) => ({
     id: loc.id,
     address: loc.address,
     region: loc.region as Region,
@@ -188,7 +189,7 @@ export async function createLocation(location: Omit<Location, 'id'>): Promise<Lo
       coordinates: location.coordinates,
       wave_id: location.wave_id || null,
       fiber_status: location.fiber_status,
-    })
+    } as Database['public']['Tables']['locations']['Insert'])
     .select()
     .single()
 
@@ -200,13 +201,14 @@ export async function createLocation(location: Omit<Location, 'id'>): Promise<Lo
     throw new ApiError('No data returned from create location operation')
   }
 
+  const locationData = data as Database['public']['Tables']['locations']['Row']
   return {
-    id: data.id,
-    address: data.address,
-    region: data.region as Region,
-    coordinates: data.coordinates as { lat: number; lng: number },
-    wave_id: data.wave_id || undefined,
-    fiber_status: data.fiber_status as FiberStatus,
+    id: locationData.id,
+    address: locationData.address,
+    region: locationData.region as Region,
+    coordinates: locationData.coordinates as { lat: number; lng: number },
+    wave_id: locationData.wave_id || undefined,
+    fiber_status: locationData.fiber_status as FiberStatus,
   }
 }
 
@@ -219,7 +221,7 @@ export async function updateLocationFiberStatus(
 ): Promise<void> {
   const { error } = await supabase
     .from('locations')
-    .update({ fiber_status: fiberStatus })
+    .update({ fiber_status: fiberStatus } as Database['public']['Tables']['locations']['Update'])
     .eq('id', locationId)
 
   if (error) {
@@ -244,7 +246,7 @@ export async function fetchWaves(): Promise<Wave[]> {
     throw handleApiError(error, 'fetchWaves')
   }
 
-  return (data || []).map((wave) => ({
+  return (data || []).map((wave: Database['public']['Tables']['waves']['Row']) => ({
     id: wave.id,
     name: wave.name,
     start_date: wave.start_date,
@@ -270,7 +272,7 @@ export async function createWave(wave: Omit<Wave, 'id' | 'progress_percentage'>)
       customer_cohort: wave.customer_cohort,
       progress_status: wave.progress_status || 'Planning',
       progress_percentage: 0,
-    })
+    } as Database['public']['Tables']['waves']['Insert'])
     .select()
     .single()
 
@@ -282,15 +284,16 @@ export async function createWave(wave: Omit<Wave, 'id' | 'progress_percentage'>)
     throw new ApiError('No data returned from create wave operation')
   }
 
+  const waveData = data as Database['public']['Tables']['waves']['Row']
   return {
-    id: data.id,
-    name: data.name,
-    start_date: data.start_date,
-    end_date: data.end_date,
-    region: data.region as Region,
-    customer_cohort: data.customer_cohort as CustomerCohort,
-    progress_status: data.progress_status as Wave['progress_status'],
-    progress_percentage: data.progress_percentage,
+    id: waveData.id,
+    name: waveData.name,
+    start_date: waveData.start_date,
+    end_date: waveData.end_date,
+    region: waveData.region as Region,
+    customer_cohort: waveData.customer_cohort as CustomerCohort,
+    progress_status: waveData.progress_status as Wave['progress_status'],
+    progress_percentage: waveData.progress_percentage,
   }
 }
 
@@ -312,7 +315,7 @@ export async function updateWaveProgress(waveId: string): Promise<number> {
     // Update wave to 0% if no locations
     const { error: updateError } = await supabase
       .from('waves')
-      .update({ progress_percentage: 0 })
+      .update({ progress_percentage: 0 } as Database['public']['Tables']['waves']['Update'])
       .eq('id', waveId)
 
     if (updateError) {
@@ -345,7 +348,7 @@ export async function updateWaveProgress(waveId: string): Promise<number> {
   // Update wave progress
   const { error: updateError } = await supabase
     .from('waves')
-    .update({ progress_percentage: progressPercentage })
+    .update({ progress_percentage: progressPercentage } as Database['public']['Tables']['waves']['Update'])
     .eq('id', waveId)
 
   if (updateError) {
@@ -372,7 +375,7 @@ export async function fetchTechnicians(): Promise<Technician[]> {
     throw handleApiError(error, 'fetchTechnicians')
   }
 
-  return (data || []).map((tech) => ({
+  return (data || []).map((tech: Database['public']['Tables']['technicians']['Row']) => ({
     id: tech.id,
     name: tech.name,
     phone: tech.phone,
@@ -397,7 +400,7 @@ export async function fetchWorkOrders(): Promise<WorkOrder[]> {
     throw handleApiError(error, 'fetchWorkOrders')
   }
 
-  return (data || []).map((wo) => ({
+  return (data || []).map((wo: Database['public']['Tables']['work_orders']['Row']) => ({
     id: wo.id,
     location_id: wo.location_id,
     technician_id: wo.technician_id,
@@ -419,7 +422,7 @@ export async function createWorkOrder(workOrder: Omit<WorkOrder, 'id'>): Promise
       status: workOrder.status,
       start_time: workOrder.start_time || null,
       end_time: workOrder.end_time || null,
-    })
+    } as Database['public']['Tables']['work_orders']['Insert'])
     .select()
     .single()
 
@@ -431,13 +434,14 @@ export async function createWorkOrder(workOrder: Omit<WorkOrder, 'id'>): Promise
     throw new ApiError('No data returned from create work order operation')
   }
 
+  const workOrderData = data as Database['public']['Tables']['work_orders']['Row']
   return {
-    id: data.id,
-    location_id: data.location_id,
-    technician_id: data.technician_id,
-    status: data.status as WorkOrderStatus,
-    start_time: data.start_time || undefined,
-    end_time: data.end_time || undefined,
+    id: workOrderData.id,
+    location_id: workOrderData.location_id,
+    technician_id: workOrderData.technician_id,
+    status: workOrderData.status as WorkOrderStatus,
+    start_time: workOrderData.start_time || undefined,
+    end_time: workOrderData.end_time || undefined,
   }
 }
 
@@ -450,7 +454,7 @@ export async function assignTechnicianToWorkOrder(
 ): Promise<void> {
   const { error } = await supabase
     .from('work_orders')
-    .update({ technician_id: technicianId })
+    .update({ technician_id: technicianId } as Database['public']['Tables']['work_orders']['Update'])
     .eq('id', workOrderId)
 
   if (error) {
@@ -473,7 +477,7 @@ export async function updateWorkOrderStatus(
 
   const { error } = await supabase
     .from('work_orders')
-    .update(updateData)
+    .update(updateData as Database['public']['Tables']['work_orders']['Update'])
     .eq('id', workOrderId)
 
   if (error) {
@@ -498,7 +502,7 @@ export async function fetchCustomers(): Promise<Customer[]> {
     throw handleApiError(error, 'fetchCustomers')
   }
 
-  return (data || []).map((cust) => ({
+  return (data || []).map((cust: Database['public']['Tables']['customers']['Row']) => ({
     id: cust.id,
     name: cust.name,
     phone: cust.phone,
@@ -516,7 +520,7 @@ export async function updateCustomerConsent(
 ): Promise<void> {
   const { error } = await supabase
     .from('customers')
-    .update({ consent_status: consentStatus })
+    .update({ consent_status: consentStatus } as Database['public']['Tables']['customers']['Update'])
     .eq('id', customerId)
 
   if (error) {
@@ -541,7 +545,7 @@ export async function fetchConsentLogs(): Promise<ConsentLog[]> {
     throw handleApiError(error, 'fetchConsentLogs')
   }
 
-  return (data || []).map((log) => ({
+  return (data || []).map((log: Database['public']['Tables']['consent_logs']['Row']) => ({
     id: log.id,
     customer_id: log.customer_id,
     agent_name: log.agent_name,
@@ -567,7 +571,7 @@ export async function createConsentLog(
       agent_name: agentName,
       status,
       notes: notes || null,
-    })
+    } as Database['public']['Tables']['consent_logs']['Insert'])
     .select()
     .single()
 

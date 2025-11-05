@@ -210,9 +210,10 @@ function TechnicianScheduling() {
                   const location = locationsData.data.find(
                     (loc) => loc.id === workOrder.location_id
                   )
-                  const technician = techniciansData.data.find(
-                    (tech) => tech.id === workOrder.technician_id
-                  )
+                  // Technician lookup (kept for potential future use)
+                  // const technician = techniciansData.data.find(
+                  //   (tech) => tech.id === workOrder.technician_id
+                  // )
 
                   return (
                     <tr key={workOrder.id}>

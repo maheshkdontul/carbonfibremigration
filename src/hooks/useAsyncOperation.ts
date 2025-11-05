@@ -4,7 +4,7 @@
  */
 
 import { useState, useCallback } from 'react'
-import { handleApiError, getErrorMessage } from '../utils/errorHandler'
+import { getErrorMessage } from '../utils/errorHandler'
 
 interface UseAsyncOperationOptions<T> {
   /** Async operation function */
@@ -24,6 +24,10 @@ interface UseAsyncOperationResult<T> {
   error: string | null
   /** Clear error */
   clearError: () => void
+  /** Success callback (if provided) */
+  onSuccess?: (result: T) => void
+  /** Error callback (if provided) */
+  onError?: (error: string) => void
 }
 
 /**
@@ -59,6 +63,8 @@ export function useAsyncOperation<T>({
     loading,
     error,
     clearError: () => setError(null),
+    onSuccess,
+    onError,
   }
 }
 

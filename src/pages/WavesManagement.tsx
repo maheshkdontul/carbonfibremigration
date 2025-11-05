@@ -3,7 +3,7 @@
  * Create and monitor migration waves with Supabase integration
  */
 
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { useDataFetching } from '../hooks/useDataFetching'
 import { useAsyncOperation } from '../hooks/useAsyncOperation'
 import { fetchWaves, fetchLocations, createWave, updateWaveProgress } from '../services/api'
@@ -89,7 +89,7 @@ function WavesManagement() {
   // Refresh wave progress when needed
   const refreshWaveProgress = async (waveId: string) => {
     try {
-      const progress = await updateWaveProgress(waveId)
+      await updateWaveProgress(waveId)
       // Update local state
       wavesData.refetch()
       showNotification('Wave progress refreshed', 'success')

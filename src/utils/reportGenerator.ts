@@ -57,9 +57,9 @@ export function downloadCSV(content: string, filename: string): void {
  * Generate daily migration report data
  */
 export function generateDailyReportData(
-  assets: Asset[],
+  _assets: Asset[],
   workOrders: WorkOrder[],
-  waves: Wave[],
+  _waves: Wave[],
   locations: Location[],
   startDate?: string,
   endDate?: string,
