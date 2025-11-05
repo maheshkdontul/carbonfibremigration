@@ -60,22 +60,24 @@ export async function fetchAssets(): Promise<Asset[]> {
  * Create a new asset in Supabase
  */
 export async function createAsset(asset: Omit<Asset, 'id'>): Promise<Asset> {
-  const response = await supabase
-    .from('assets')
-    .insert({
-      type: asset.type,
-      location_id: asset.location_id || null,
-      status: asset.status,
-      installation_date: asset.installation_date || null,
-      technician_id: asset.technician_id || null,
-    } as Database['public']['Tables']['assets']['Insert'])
-    .select()
-    .single()
-
-  const { data, error } = response as {
-    data: Database['public']['Tables']['assets']['Row'] | null
-    error: any
+  const insertPayload: Database['public']['Tables']['assets']['Insert'] = {
+    type: asset.type,
+    location_id: asset.location_id || null,
+    status: asset.status,
+    installation_date: asset.installation_date || null,
+    technician_id: asset.technician_id || null,
   }
+
+  const response = await (supabase
+    .from('assets')
+    .insert(insertPayload)
+    .select()
+    .single() as Promise<{
+      data: Database['public']['Tables']['assets']['Row'] | null
+      error: any
+    }>)
+
+  const { data, error } = response
 
   if (error) {
     throw handleApiError(error, 'createAsset')
@@ -107,10 +109,12 @@ export async function updateAsset(id: string, updates: Partial<Asset>): Promise<
   if (updates.installation_date !== undefined) updatePayload.installation_date = updates.installation_date || null
   if (updates.technician_id !== undefined) updatePayload.technician_id = updates.technician_id || null
 
-  const { error } = await supabase
+  const response = await (supabase
     .from('assets')
     .update(updatePayload)
-    .eq('id', id)
+    .eq('id', id) as Promise<{ error: any }>)
+
+  const { error } = response
 
   if (error) {
     throw handleApiError(error, 'updateAsset')
@@ -132,23 +136,23 @@ export async function bulkCreateAssets(assets: Omit<Asset, 'id'>[]): Promise<{ s
     const batchNumber = Math.floor(i / batchSize) + 1
     
     try {
-      const batchResponse = await supabase
-        .from('assets')
-        .insert(
-          batch.map((asset) => ({
-            type: asset.type,
-            location_id: asset.location_id || null,
-            status: asset.status,
-            installation_date: asset.installation_date || null,
-            technician_id: asset.technician_id || null,
-          })) as Database['public']['Tables']['assets']['Insert'][]
-        )
-        .select()
+      const batchPayload: Database['public']['Tables']['assets']['Insert'][] = batch.map((asset) => ({
+        type: asset.type,
+        location_id: asset.location_id || null,
+        status: asset.status,
+        installation_date: asset.installation_date || null,
+        technician_id: asset.technician_id || null,
+      }))
 
-      const { data, error } = batchResponse as {
-        data: Database['public']['Tables']['assets']['Row'][] | null
-        error: any
-      }
+      const batchResponse = await (supabase
+        .from('assets')
+        .insert(batchPayload)
+        .select() as Promise<{
+          data: Database['public']['Tables']['assets']['Row'][] | null
+          error: any
+        }>)
+
+      const { data, error } = batchResponse
 
       if (error) {
         const apiError = handleApiError(error, `bulkCreateAssets batch ${batchNumber}`)
@@ -203,22 +207,24 @@ export async function fetchLocations(): Promise<Location[]> {
  * Create a new location
  */
 export async function createLocation(location: Omit<Location, 'id'>): Promise<Location> {
-  const response = await supabase
-    .from('locations')
-    .insert({
-      address: location.address,
-      region: location.region,
-      coordinates: location.coordinates,
-      wave_id: location.wave_id || null,
-      fiber_status: location.fiber_status,
-    } as Database['public']['Tables']['locations']['Insert'])
-    .select()
-    .single()
-
-  const { data, error } = response as {
-    data: Database['public']['Tables']['locations']['Row'] | null
-    error: any
+  const insertPayload: Database['public']['Tables']['locations']['Insert'] = {
+    address: location.address,
+    region: location.region,
+    coordinates: location.coordinates,
+    wave_id: location.wave_id || null,
+    fiber_status: location.fiber_status,
   }
+
+  const response = await (supabase
+    .from('locations')
+    .insert(insertPayload)
+    .select()
+    .single() as Promise<{
+      data: Database['public']['Tables']['locations']['Row'] | null
+      error: any
+    }>)
+
+  const { data, error } = response
 
   if (error) {
     throw handleApiError(error, 'createLocation')
@@ -246,10 +252,16 @@ export async function updateLocationFiberStatus(
   locationId: string,
   fiberStatus: FiberStatus
 ): Promise<void> {
-  const { error } = await supabase
+  const updatePayload: Database['public']['Tables']['locations']['Update'] = {
+    fiber_status: fiberStatus,
+  }
+
+  const response = await (supabase
     .from('locations')
-    .update({ fiber_status: fiberStatus } as Database['public']['Tables']['locations']['Update'])
-    .eq('id', locationId)
+    .update(updatePayload)
+    .eq('id', locationId) as Promise<{ error: any }>)
+
+  const { error } = response
 
   if (error) {
     throw handleApiError(error, 'updateLocationFiberStatus')
@@ -294,24 +306,26 @@ export async function fetchWaves(): Promise<Wave[]> {
  * Create a new wave
  */
 export async function createWave(wave: Omit<Wave, 'id' | 'progress_percentage'>): Promise<Wave> {
-  const response = await supabase
-    .from('waves')
-    .insert({
-      name: wave.name,
-      start_date: wave.start_date,
-      end_date: wave.end_date,
-      region: wave.region,
-      customer_cohort: wave.customer_cohort,
-      progress_status: wave.progress_status || 'Planning',
-      progress_percentage: 0,
-    } as Database['public']['Tables']['waves']['Insert'])
-    .select()
-    .single()
-
-  const { data, error } = response as {
-    data: Database['public']['Tables']['waves']['Row'] | null
-    error: any
+  const insertPayload: Database['public']['Tables']['waves']['Insert'] = {
+    name: wave.name,
+    start_date: wave.start_date,
+    end_date: wave.end_date,
+    region: wave.region,
+    customer_cohort: wave.customer_cohort,
+    progress_status: wave.progress_status || 'Planning',
+    progress_percentage: 0,
   }
+
+  const response = await (supabase
+    .from('waves')
+    .insert(insertPayload)
+    .select()
+    .single() as Promise<{
+      data: Database['public']['Tables']['waves']['Row'] | null
+      error: any
+    }>)
+
+  const { data, error } = response
 
   if (error) {
     throw handleApiError(error, 'createWave')
@@ -355,10 +369,15 @@ export async function updateWaveProgress(waveId: string): Promise<number> {
 
   if (!locations || locations.length === 0) {
     // Update wave to 0% if no locations
-    const { error: updateError } = await supabase
+    const updatePayload: Database['public']['Tables']['waves']['Update'] = {
+      progress_percentage: 0,
+    }
+    const updateResponse = await (supabase
       .from('waves')
-      .update({ progress_percentage: 0 } as Database['public']['Tables']['waves']['Update'])
-      .eq('id', waveId)
+      .update(updatePayload)
+      .eq('id', waveId) as Promise<{ error: any }>)
+
+    const { error: updateError } = updateResponse
 
     if (updateError) {
       throw handleApiError(updateError, 'updateWaveProgress - update to 0%')
@@ -393,10 +412,15 @@ export async function updateWaveProgress(waveId: string): Promise<number> {
     : 0
 
   // Update wave progress
-  const { error: updateError } = await supabase
+  const updatePayload: Database['public']['Tables']['waves']['Update'] = {
+    progress_percentage: progressPercentage,
+  }
+  const updateResponse = await (supabase
     .from('waves')
-    .update({ progress_percentage: progressPercentage } as Database['public']['Tables']['waves']['Update'])
-    .eq('id', waveId)
+    .update(updatePayload)
+    .eq('id', waveId) as Promise<{ error: any }>)
+
+  const { error: updateError } = updateResponse
 
   if (updateError) {
     throw handleApiError(updateError, 'updateWaveProgress - update percentage')
@@ -471,22 +495,24 @@ export async function fetchWorkOrders(): Promise<WorkOrder[]> {
  * Create a new work order
  */
 export async function createWorkOrder(workOrder: Omit<WorkOrder, 'id'>): Promise<WorkOrder> {
-  const response = await supabase
-    .from('work_orders')
-    .insert({
-      location_id: workOrder.location_id,
-      technician_id: workOrder.technician_id,
-      status: workOrder.status,
-      start_time: workOrder.start_time || null,
-      end_time: workOrder.end_time || null,
-    } as Database['public']['Tables']['work_orders']['Insert'])
-    .select()
-    .single()
-
-  const { data, error } = response as {
-    data: Database['public']['Tables']['work_orders']['Row'] | null
-    error: any
+  const insertPayload: Database['public']['Tables']['work_orders']['Insert'] = {
+    location_id: workOrder.location_id,
+    technician_id: workOrder.technician_id,
+    status: workOrder.status,
+    start_time: workOrder.start_time || null,
+    end_time: workOrder.end_time || null,
   }
+
+  const response = await (supabase
+    .from('work_orders')
+    .insert(insertPayload)
+    .select()
+    .single() as Promise<{
+      data: Database['public']['Tables']['work_orders']['Row'] | null
+      error: any
+    }>)
+
+  const { data, error } = response
 
   if (error) {
     throw handleApiError(error, 'createWorkOrder')
@@ -514,10 +540,15 @@ export async function assignTechnicianToWorkOrder(
   workOrderId: string,
   technicianId: string
 ): Promise<void> {
-  const { error } = await supabase
+  const updatePayload: Database['public']['Tables']['work_orders']['Update'] = {
+    technician_id: technicianId,
+  }
+  const response = await (supabase
     .from('work_orders')
-    .update({ technician_id: technicianId } as Database['public']['Tables']['work_orders']['Update'])
-    .eq('id', workOrderId)
+    .update(updatePayload)
+    .eq('id', workOrderId) as Promise<{ error: any }>)
+
+  const { error } = response
 
   if (error) {
     throw handleApiError(error, 'assignTechnicianToWorkOrder')
@@ -533,14 +564,16 @@ export async function updateWorkOrderStatus(
   startTime?: string,
   endTime?: string
 ): Promise<void> {
-  const updateData: { status: WorkOrderStatus; start_time?: string; end_time?: string } = { status }
-  if (startTime) updateData.start_time = startTime
-  if (endTime) updateData.end_time = endTime
+  const updatePayload: Database['public']['Tables']['work_orders']['Update'] = { status }
+  if (startTime) updatePayload.start_time = startTime
+  if (endTime) updatePayload.end_time = endTime
 
-  const { error } = await supabase
+  const response = await (supabase
     .from('work_orders')
-    .update(updateData as Database['public']['Tables']['work_orders']['Update'])
-    .eq('id', workOrderId)
+    .update(updatePayload)
+    .eq('id', workOrderId) as Promise<{ error: any }>)
+
+  const { error } = response
 
   if (error) {
     throw handleApiError(error, 'updateWorkOrderStatus')
@@ -585,10 +618,15 @@ export async function updateCustomerConsent(
   customerId: string,
   consentStatus: ConsentStatus
 ): Promise<void> {
-  const { error } = await supabase
+  const updatePayload: Database['public']['Tables']['customers']['Update'] = {
+    consent_status: consentStatus,
+  }
+  const response = await (supabase
     .from('customers')
-    .update({ consent_status: consentStatus } as Database['public']['Tables']['customers']['Update'])
-    .eq('id', customerId)
+    .update(updatePayload)
+    .eq('id', customerId) as Promise<{ error: any }>)
+
+  const { error } = response
 
   if (error) {
     throw handleApiError(error, 'updateCustomerConsent')
@@ -636,21 +674,23 @@ export async function createConsentLog(
   status: ConsentStatus,
   notes?: string
 ): Promise<ConsentLog> {
-  const response = await supabase
-    .from('consent_logs')
-    .insert({
-      customer_id: customerId,
-      agent_name: agentName,
-      status,
-      notes: notes || null,
-    } as Database['public']['Tables']['consent_logs']['Insert'])
-    .select()
-    .single()
-
-  const { data, error } = response as {
-    data: Database['public']['Tables']['consent_logs']['Row'] | null
-    error: any
+  const insertPayload: Database['public']['Tables']['consent_logs']['Insert'] = {
+    customer_id: customerId,
+    agent_name: agentName,
+    status,
+    notes: notes || null,
   }
+
+  const response = await (supabase
+    .from('consent_logs')
+    .insert(insertPayload)
+    .select()
+    .single() as Promise<{
+      data: Database['public']['Tables']['consent_logs']['Row'] | null
+      error: any
+    }>)
+
+  const { data, error } = response
 
   if (error) {
     throw handleApiError(error, 'createConsentLog')
